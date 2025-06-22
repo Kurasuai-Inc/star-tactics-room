@@ -37,9 +37,18 @@ class KnowledgeNode:
 class KnowledgeBase:
     """Manages a collection of knowledge nodes."""
 
-    def __init__(self):
-        """Initialize an empty knowledge base."""
+    def __init__(self, storage=None):
+        """Initialize an empty knowledge base.
+
+        Args:
+            storage: Optional storage backend for persistence
+        """
         self._nodes: dict[str, KnowledgeNode] = {}
+        self._storage = storage
+
+        # Load from storage if provided
+        if self._storage:
+            self._storage.load(self)
 
     def create_node(
         self,
@@ -61,6 +70,11 @@ class KnowledgeBase:
         """
         node = KnowledgeNode(title=title, content=content, tags=tags, links=links)
         self._nodes[node.id] = node
+
+        # Save to storage if available
+        if self._storage:
+            self._storage.save(self)
+
         return node.id
 
     def get_node(self, node_id: str) -> KnowledgeNode | None:
@@ -108,6 +122,11 @@ class KnowledgeBase:
             node.links = links
 
         node.updated_at = datetime.now()
+
+        # Save to storage if available
+        if self._storage:
+            self._storage.save(self)
+
         return True
 
     def delete_node(self, node_id: str) -> bool:
@@ -121,6 +140,11 @@ class KnowledgeBase:
         """
         if node_id in self._nodes:
             del self._nodes[node_id]
+
+            # Save to storage if available
+            if self._storage:
+                self._storage.save(self)
+
             return True
         return False
 
