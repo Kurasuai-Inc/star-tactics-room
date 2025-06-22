@@ -71,6 +71,10 @@ def add_bidirectional_link(self, node1_id: str, node2_id: str) -> bool:
         node2.links.append(node1_id)
         node2.updated_at = datetime.now()
     
+    # Save to storage if available
+    if self._storage:
+        self._storage.save(self)
+    
     return True
 
 
@@ -99,6 +103,10 @@ def remove_bidirectional_link(self, node1_id: str, node2_id: str) -> bool:
     if node1_id in node2.links:
         node2.links.remove(node1_id)
         node2.updated_at = datetime.now()
+    
+    # Save to storage if available
+    if self._storage:
+        self._storage.save(self)
     
     return True
 
@@ -141,6 +149,11 @@ def fix_broken_links(self, node_id: str) -> int:
         node.links.remove(broken_id)
     
     node.updated_at = datetime.now()
+    
+    # Save to storage if available
+    if self._storage:
+        self._storage.save(self)
+    
     return len(broken_links)
 
 
