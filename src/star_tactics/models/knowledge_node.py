@@ -123,3 +123,59 @@ class KnowledgeBase:
             del self._nodes[node_id]
             return True
         return False
+
+    def search_by_tags(self, tags: list[str]) -> list[KnowledgeNode]:
+        """Search nodes by tags (AND search).
+
+        Args:
+            tags: List of tags to search for
+
+        Returns:
+            List of nodes that have all specified tags
+        """
+        if not tags:
+            return list(self._nodes.values())
+
+        # Convert search tags to lowercase for case-insensitive search
+        search_tags = [tag.lower() for tag in tags]
+
+        results = []
+        for node in self._nodes.values():
+            # Convert node tags to lowercase for comparison
+            node_tags_lower = [tag.lower() for tag in node.tags]
+            # Check if all search tags are in node tags
+            if all(tag in node_tags_lower for tag in search_tags):
+                results.append(node)
+
+        return results
+
+    def search_by_text(self, text: str) -> list[KnowledgeNode]:
+        """Search nodes by text in title or content.
+
+        Args:
+            text: Text to search for (case-insensitive)
+
+        Returns:
+            List of nodes that contain the text in title or content
+        """
+        if not text:
+            return list(self._nodes.values())
+
+        # Convert search text to lowercase for case-insensitive search
+        search_text = text.lower()
+
+        results = []
+        for node in self._nodes.values():
+            # Check if text is in title or content (case-insensitive)
+            if search_text in node.title.lower() or search_text in node.content.lower():
+                results.append(node)
+
+        return results
+
+    def get_all_nodes(self) -> list[KnowledgeNode]:
+        """Get all nodes in the knowledge base.
+
+        Returns:
+            List of all nodes
+        """
+        return list(self._nodes.values())
