@@ -147,3 +147,9 @@ cython_debug/
 
 # uv
 uv.lock
+
+# Project specific
+knowledge_base.json
+*.db
+*.sqlite
+*.sqlite3
