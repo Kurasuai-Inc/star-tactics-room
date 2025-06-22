@@ -1,4 +1,5 @@
 """pytest共通設定とフィクスチャ"""
+
 import pytest
 
 
@@ -8,5 +9,5 @@ def sample_data():
     return {
         "name": "テスト戦術",
         "description": "これはテスト用の戦術です",
-        "tags": ["テスト", "サンプル"]
+        "tags": ["テスト", "サンプル"],
     }
