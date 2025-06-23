@@ -251,6 +251,84 @@ async def get_stats():
     }
 
 
+@app.get("/graph/optimized")
+async def get_optimized_graph(
+    limit: Optional[int] = 50,
+    min_links: Optional[int] = 2
+):
+    """パフォーマンス最適化された星座データセット
+    
+    Args:
+        limit: 表示するノード数上限（デフォルト50）
+        min_links: 最小リンク数でフィルタ（デフォルト2）
+    """
+    if kb is None:
+        raise HTTPException(status_code=500, detail="データベースが初期化されていません")
+    
+    all_nodes = kb.get_all_nodes()
+    
+    # 重要度とリンク数でノードを選別
+    scored_nodes = []
+    for node in all_nodes:
+        link_count = len(node.links)
+        importance = getattr(node, 'metadata', {}).get('importance', 5) if hasattr(node, 'metadata') else 5
+        
+        # スコア計算: リンク数 * 重要度
+        score = link_count * importance
+        
+        if link_count >= min_links:
+            scored_nodes.append((score, node))
+    
+    # スコア順でソートして上位を選択
+    scored_nodes.sort(key=lambda x: x[0], reverse=True)
+    selected_nodes = [node for _, node in scored_nodes[:limit]]
+    
+    # 選択されたノードのIDセット
+    selected_ids = {node.id for node in selected_nodes}
+    
+    # 最適化されたノード形式
+    optimized_nodes = []
+    for node in selected_nodes:
+        metadata = getattr(node, 'metadata', {}) if hasattr(node, 'metadata') else {}
+        optimized_nodes.append({
+            "id": node.id,
+            "title": node.title,
+            "content": node.content[:100] + "..." if len(node.content) > 100 else node.content,
+            "tags": node.tags[:3],  # タグは最大3つまで
+            "category": metadata.get('category', 'unknown'),
+            "importance": metadata.get('importance', 5),
+            "link_count": len([lid for lid in node.links if lid in selected_ids])
+        })
+    
+    # 選択されたノード間のリンクのみ抽出
+    optimized_links = []
+    processed_links = set()
+    
+    for node in selected_nodes:
+        for link_id in node.links:
+            if link_id in selected_ids:
+                link_pair = tuple(sorted([node.id, link_id]))
+                if link_pair not in processed_links:
+                    processed_links.add(link_pair)
+                    optimized_links.append({
+                        "source": link_pair[0],
+                        "target": link_pair[1],
+                        "type": "関連"
+                    })
+    
+    return {
+        "nodes": optimized_nodes,
+        "links": optimized_links,
+        "optimization_info": {
+            "total_available_nodes": len(all_nodes),
+            "selected_nodes": len(optimized_nodes),
+            "total_available_links": sum(len(node.links) for node in all_nodes) // 2,
+            "selected_links": len(optimized_links),
+            "reduction_ratio": f"{len(optimized_nodes)}/{len(all_nodes)} nodes, {len(optimized_links)}/{sum(len(node.links) for node in all_nodes) // 2} links"
+        }
+    }
+
+
 @app.get("/debug/small")
 async def get_small_dataset():
     """デバッグ用小規模データセット（10ノード・5リンク）"""

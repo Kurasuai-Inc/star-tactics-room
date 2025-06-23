@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # 🌟 Star Constellation API Backend
+  api:
+    build: .
+    container_name: star-constellation-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - ENVIRONMENT=development
+    volumes:
+      - ./knowledge_base.json:/app/knowledge_base.json:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - star-network
+
+  # 🌌 Star Constellation Frontend (future)
+  # frontend:
+  #   build: ./star-constellation-viewer
+  #   container_name: star-constellation-frontend
+  #   ports:
+  #     - "5173:5173"
+  #   environment:
+  #     - VITE_API_URL=http://api:8000
+  #   depends_on:
+  #     - api
+  #   networks:
+  #     - star-network
+
+networks:
+  star-network:
+    driver: bridge
+
+# 💫 Usage:
+# docker-compose up -d          # Start services in background
+# docker-compose logs -f        # Follow logs
+# docker-compose down           # Stop and remove containers
