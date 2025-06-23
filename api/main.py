@@ -163,13 +163,16 @@ async def get_graph_data():
     links = []
     
     # リンク関係を構築
+    processed_links = set()  # 重複チェック用
     for node in nodes:
         for link_id in node.links:
-            # 重複を避けるため、source < target の場合のみ追加
-            if node.id < link_id:
+            # 双方向リンクの重複を避けるため、ペアをソートして追加
+            link_pair = tuple(sorted([node.id, link_id]))
+            if link_pair not in processed_links:
+                processed_links.add(link_pair)
                 links.append(LinkRelationship(
-                    source=node.id,
-                    target=link_id,
+                    source=link_pair[0],
+                    target=link_pair[1],
                     type="関連"
                 ))
     
@@ -245,6 +248,50 @@ async def get_stats():
         "total_links": total_links,
         "average_links_per_node": total_links / total_nodes if total_nodes > 0 else 0,
         "categories": category_stats
+    }
+
+
+@app.get("/debug/small")
+async def get_small_dataset():
+    """デバッグ用小規模データセット（10ノード・5リンク）"""
+    if kb is None:
+        raise HTTPException(status_code=500, detail="データベースが初期化されていません")
+    
+    nodes = kb.get_all_nodes()[:10]  # 最初の10ノードのみ
+    simple_nodes = []
+    simple_links = []
+    
+    # シンプルなノード形式
+    for node in nodes:
+        simple_nodes.append({
+            "id": node.id,
+            "title": node.title,
+            "category": getattr(node, 'metadata', {}).get('category', 'unknown') if hasattr(node, 'metadata') else 'unknown'
+        })
+    
+    # 10ノード内でのリンクのみ抽出
+    node_ids = [n.id for n in nodes]
+    processed_links = set()
+    
+    for node in nodes:
+        for link_id in node.links:
+            if link_id in node_ids:
+                link_pair = tuple(sorted([node.id, link_id]))
+                if link_pair not in processed_links and len(simple_links) < 5:
+                    processed_links.add(link_pair)
+                    simple_links.append({
+                        "source": link_pair[0],
+                        "target": link_pair[1]
+                    })
+    
+    return {
+        "nodes": simple_nodes,
+        "links": simple_links,
+        "debug_info": {
+            "total_available_nodes": len(kb.get_all_nodes()),
+            "showing_nodes": len(simple_nodes),
+            "showing_links": len(simple_links)
+        }
     }
 
 

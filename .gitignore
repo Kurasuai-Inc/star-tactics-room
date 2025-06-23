@@ -147,3 +147,13 @@ cython_debug/
 
 # uv
 uv.lock
+
+# Project specific
+test-*.html
+api_env/
+api.log
+*.egg-info/
+
+# Temporary files
+tmp/
+temp/

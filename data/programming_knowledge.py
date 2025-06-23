@@ -159,52 +159,99 @@ def create_tools_data(kb: KnowledgeBase) -> Dict[str, str]:
         tags=["開発ツール", "Git", "ホスティング", "CI/CD", "Microsoft"]
     )
     
+    # npm
+    nodes["npm"] = kb.create_node(
+        title="npm",
+        content="Node.jsのパッケージマネージャ。JavaScript/TypeScriptのライブラリ管理とスクリプト実行を行う。世界最大のソフトウェアレジストリ。",
+        tags=["開発ツール", "パッケージ管理", "JavaScript", "Node.js"]
+    )
+    
     return nodes
 
 
 def create_relationships(kb: KnowledgeBase, all_nodes: Dict[str, str]):
     """ノード間の関係性を作成"""
-    # TypeScript -> JavaScript (派生)
+    # 言語とフレームワークの関係
     if "typescript" in all_nodes and "javascript" in all_nodes:
         kb.add_bidirectional_link(all_nodes["typescript"], all_nodes["javascript"])
     
-    # React -> JavaScript (使用)
     if "react" in all_nodes and "javascript" in all_nodes:
         kb.add_bidirectional_link(all_nodes["react"], all_nodes["javascript"])
     
-    # Vue.js -> JavaScript (使用)
+    if "react" in all_nodes and "typescript" in all_nodes:
+        kb.add_bidirectional_link(all_nodes["react"], all_nodes["typescript"])
+    
     if "vue" in all_nodes and "javascript" in all_nodes:
         kb.add_bidirectional_link(all_nodes["vue"], all_nodes["javascript"])
     
-    # FastAPI -> Python (実装)
+    if "vue" in all_nodes and "typescript" in all_nodes:
+        kb.add_bidirectional_link(all_nodes["vue"], all_nodes["typescript"])
+    
     if "fastapi" in all_nodes and "python" in all_nodes:
         kb.add_bidirectional_link(all_nodes["fastapi"], all_nodes["python"])
     
-    # Django -> Python (実装)
     if "django" in all_nodes and "python" in all_nodes:
         kb.add_bidirectional_link(all_nodes["django"], all_nodes["python"])
     
-    # Next.js -> React (使用)
     if "nextjs" in all_nodes and "react" in all_nodes:
         kb.add_bidirectional_link(all_nodes["nextjs"], all_nodes["react"])
     
-    # Express -> JavaScript (実装)
+    if "nextjs" in all_nodes and "typescript" in all_nodes:
+        kb.add_bidirectional_link(all_nodes["nextjs"], all_nodes["typescript"])
+    
+    if "nextjs" in all_nodes and "javascript" in all_nodes:
+        kb.add_bidirectional_link(all_nodes["nextjs"], all_nodes["javascript"])
+    
     if "express" in all_nodes and "javascript" in all_nodes:
         kb.add_bidirectional_link(all_nodes["express"], all_nodes["javascript"])
     
-    # React <-> Vue.js (競合)
+    if "express" in all_nodes and "typescript" in all_nodes:
+        kb.add_bidirectional_link(all_nodes["express"], all_nodes["typescript"])
+    
+    # フレームワーク同士の関係
     if "react" in all_nodes and "vue" in all_nodes:
         kb.add_bidirectional_link(all_nodes["react"], all_nodes["vue"])
     
-    # FastAPI <-> Django (競合)
     if "fastapi" in all_nodes and "django" in all_nodes:
         kb.add_bidirectional_link(all_nodes["fastapi"], all_nodes["django"])
     
-    # uv -> Python (関連)
-    if "uv" in all_nodes and "python" in all_nodes:
-        kb.add_bidirectional_link(all_nodes["uv"], all_nodes["python"])
+    if "fastapi" in all_nodes and "express" in all_nodes:
+        kb.add_bidirectional_link(all_nodes["fastapi"], all_nodes["express"])
     
-    # GitHub -> Git (使用)
+    # ツールと言語・フレームワークの関係
+    if "git" in all_nodes:
+        for lang in ["python", "javascript", "typescript", "rust", "go", "java"]:
+            if lang in all_nodes:
+                kb.add_bidirectional_link(all_nodes["git"], all_nodes[lang])
+    
+    if "docker" in all_nodes:
+        for tech in ["python", "javascript", "fastapi", "django", "express", "nextjs", "rust", "go"]:
+            if tech in all_nodes:
+                kb.add_bidirectional_link(all_nodes["docker"], all_nodes[tech])
+    
+    if "vscode" in all_nodes:
+        for lang in ["python", "javascript", "typescript", "rust", "go", "java"]:
+            if lang in all_nodes:
+                kb.add_bidirectional_link(all_nodes["vscode"], all_nodes[lang])
+    
+    if "uv" in all_nodes:
+        for py_tech in ["python", "fastapi", "django"]:
+            if py_tech in all_nodes:
+                kb.add_bidirectional_link(all_nodes["uv"], all_nodes[py_tech])
+    
+    if "npm" in all_nodes:
+        for js_tech in ["javascript", "typescript", "react", "vue", "nextjs", "express"]:
+            if js_tech in all_nodes:
+                kb.add_bidirectional_link(all_nodes["npm"], all_nodes[js_tech])
+    
+    # 言語同士の関係
+    if "rust" in all_nodes and "go" in all_nodes:
+        kb.add_bidirectional_link(all_nodes["rust"], all_nodes["go"])
+    
+    if "python" in all_nodes and "java" in all_nodes:
+        kb.add_bidirectional_link(all_nodes["python"], all_nodes["java"])
+    
+    # GitとGitHubの関係
     if "github" in all_nodes and "git" in all_nodes:
         kb.add_bidirectional_link(all_nodes["github"], all_nodes["git"])
 

@@ -71,6 +71,10 @@ def add_bidirectional_link(self, node1_id: str, node2_id: str) -> bool:
         node2.links.append(node1_id)
         node2.updated_at = datetime.now()
     
+    # Save to storage if available
+    if self._storage:
+        self._storage.save(self)
+    
     return True
 
 
